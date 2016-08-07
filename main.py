@@ -27,7 +27,7 @@ for img in submissions:
                 image.write(file.content)
 
             image_names.append(filename)
-        except urllib.error.HTTPError as e:
+        except requests.exceptions as e:
             sys.stderr.write("HTTPs Problem with: " + img.url + ' ')
 
 # If there is no images downloaded then exit!
