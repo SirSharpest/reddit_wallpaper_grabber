@@ -1,18 +1,34 @@
 """This is the main entry point for the reddit wallpaper
 grabber and setter, currently only for linux!"""
 
+# Imports
 import praw
 import requests
 import re
 import sys
 import os
+import random
+import datetime
+
+
+def modification_date(filename):
+    t = os.path.getmtime(filename)
+    return datetime.datetime.fromtimestamp(t)
+
 
 reddit = praw.Reddit(user_agent='wallpaper_grabber')
 submissions = reddit.get_subreddit('wallpapers').get_hot(limit=25)
 filter_name = "^(.*[\\\/])"  # This removes everything but after the last /
 image_names = []  # Container for names' of images
 
-if not os.path.exists("wallpapers"):
+
+if os.path.exists("wallpapers"):
+    date = modification_date("wallpapers")
+    age = (datetime.datetime.now() - date).seconds
+    if age / 3600 >= 24:
+        import shutil
+        shutil.rmtree("wallpapers")
+else:
     os.makedirs("wallpapers")
 
 # Loops through all submissions and decides if they're valid image formats
@@ -33,3 +49,11 @@ for img in submissions:
 # If there is no images downloaded then exit!
 if(len(image_names) < 1):
     sys.ext()
+else:
+    background = random.choice(image_names)
+    command = "gsettings set org.gnome.desktop.background picture-uri\
+    file:" + os.getcwd() + "/" + background
+
+    import subprocess
+    process = subprocess.Popen(command.split())
+    sys.exit()
