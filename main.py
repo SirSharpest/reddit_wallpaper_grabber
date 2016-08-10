@@ -17,18 +17,24 @@ def modification_date(filename):
     return datetime.datetime.fromtimestamp(t)
 
 
-def select_from_x_pictures(num_to_get):
-    reddit = praw.Reddit(user_agent='wallpaper_grabber')
-    subs = reddit.get_subreddit('wallpapers').get_hot(limit=num_to_get)
-    filter_name = "^(.*[\\\/])"  # This removes everything but after the last /
-    image = None
+def select_from_x_pictures(num_to_get, subreddit):
 
+    try:
+        reddit = praw.Reddit(user_agent='wallpaper_grabber')
+        subs = reddit.get_subreddit(subreddit).get_hot(limit=num_to_get)
+    except praw.errors.InvalidSubreddit:
+        sys.stderr("Subreddit doesn't exist")
+        sys.exit()
+
+    filter_name = "^(.*[\\\/])"  # This removes everything but after the last /
+
+    image = None
     submissions = []
     for img in subs:
         if ".png" in img.url.lower() or ".jpg" in img.url.lower():
             submissions.append(img.url)
+            attempts = 0
 
-    attempts = 0
     while attempts < num_to_get:
         try:
             check_file_exits()
@@ -58,4 +64,4 @@ def set_wallpaper(wallpaper_to_use):
     file:" + os.getcwd() + "/" + wallpaper_to_use
     subprocess.Popen(command.split())
 
-set_wallpaper(select_from_x_pictures(25))
+set_wallpaper(select_from_x_pictures(25, "wallpapers"))
